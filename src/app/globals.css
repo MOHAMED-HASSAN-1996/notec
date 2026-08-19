@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Qatar2022 Arabic";
+  src: url("/fonts/qatar-medium.otf") format("opentype");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Qatar2022 Arabic";
+  src: url("/fonts/qatar-bold.otf") format("opentype");
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Qatar2022 Arabic";
+  src: url("/fonts/qatar-heavy.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- theme tokens ---------- */
+:root {
+  --t-ink: #0a0a0e;
+  --t-ink2: #0e0e14;
+  --t-card: #13131a;
+  --t-card2: #191922;
+  --t-bone: #f1ede1;
+  --t-mut: #9d988a;
+  --t-line: #26262f;
+  --t-lime: #818cf8;
+  --t-limed: #a5b4fc;
+  --t-amber: #f0c14f;
+  --t-red: #f27059;
+  --t-dot: rgba(241, 237, 225, 0.13);
+  --t-outline: rgba(241, 237, 225, 0.14);
+  --t-outlinelime: rgba(129, 140, 248, 0.4);
+  color-scheme: dark;
+}
+
+html.light {
+  --t-ink: #ffffff;
+  --t-ink2: #f5f5f5;
+  --t-card: #ffffff;
+  --t-card2: #fafafa;
+  --t-bone: #1a1a21;
+  --t-mut: #6d6a5b;
+  --t-line: #e5e5e5;
+  --t-lime: #6366f1;
+  --t-limed: #4338ca;
+  --t-amber: #93660a;
+  --t-red: #c0432b;
+  --t-dot: rgba(26, 26, 33, 0.08);
+  --t-outline: rgba(26, 26, 33, 0.1);
+  --t-outlinelime: rgba(67, 56, 202, 0.45);
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-sans: "Qatar2022 Arabic", sans-serif;
+  --color-ink: var(--t-ink);
+  --color-ink2: var(--t-ink2);
+  --color-card: var(--t-card);
+  --color-card2: var(--t-card2);
+  --color-bone: var(--t-bone);
+  --color-mut: var(--t-mut);
+  --color-line: var(--t-line);
+  --color-lime: var(--t-lime);
+  --color-limed: var(--t-limed);
+  --color-amber: var(--t-amber);
+  --color-red: var(--t-red);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-padding-top: 80px;
+}
+
+body {
+  background: var(--t-ink);
+  color: var(--t-bone);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  overflow-x: hidden;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+
+::selection {
+  background: var(--t-lime);
+  color: var(--t-ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--t-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--t-line);
+  border-radius: 99px;
+  border: 2px solid var(--t-ink);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--t-mut);
+}
+
+/* film grain over everything (non-interactive) */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
+}
+html.light .grain {
+  opacity: 0.035;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.text-outline {
+  -webkit-text-stroke: 1.5px var(--t-outline);
+  color: transparent;
+}
+.text-outline-lime {
+  -webkit-text-stroke: 1.5px var(--t-outlinelime);
+  color: transparent;
+}
+
+.field {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--t-line);
+  background: var(--t-ink2);
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--t-bone);
+  min-height: 50px;
+  transition: border-color 0.2s;
+}
+.field::placeholder {
+  color: color-mix(in oklab, var(--t-mut) 75%, transparent);
+}
+.field:focus {
+  outline: none;
+  border-color: color-mix(in oklab, var(--t-limed) 55%, transparent);
+}
+select.field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239d988a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 14px center;
+  padding-left: 40px;
+}
+html[dir="ltr"] select.field {
+  background-position: right 14px center;
+  padding-left: 16px;
+  padding-right: 40px;
+}
+input[type="date"].field,
+input[type="time"].field {
+  min-height: 50px;
+}
+
+.dot-grid {
+  background-image: radial-gradient(var(--t-dot) 1px, transparent 1.5px);
+  background-size: 26px 26px;
+}
