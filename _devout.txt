@@ -4,3 +4,10 @@
 - Environments: .env
 ✓ Ready in 1935ms
 
+ GET / 200 in 9.4s (next.js: 4.9s, application-code: 4.6s)
+ GET /fonts/qatar-heavy.otf 404 in 5.7s (next.js: 2.4s, application-code: 3.3s)
+ GET /fonts/qatar-medium.otf 404 in 5.7s (next.js: 2.8s, application-code: 2.8s)
+ GET /fonts/qatar-bold.otf 404 in 5.7s (next.js: 2.9s, application-code: 2.8s)
+ GET /sw.js 404 in 44ms (next.js: 5ms, application-code: 40ms)
+ GET /api/auth/me 200 in 5.9s (next.js: 5.9s, application-code: 15ms)
+ GET /sw.js 404 in 40ms (next.js: 5ms, application-code: 35ms)
