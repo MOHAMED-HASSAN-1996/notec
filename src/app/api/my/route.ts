@@ -15,20 +15,28 @@ export async function GET(req: Request) {
     return NextResponse.json({ reservations: [], reminders: [] });
   }
 
-  const [resv, rem] = await Promise.all([
-    db
-      .select({ at: reservations.createdAt, e: events })
-      .from(reservations)
-      .innerJoin(events, eq(reservations.eventId, events.id))
-      .where(eq(reservations.device, owner))
-      .orderBy(asc(events.startsAt)),
-    db
-      .select({ beforeMinutes: reminders.beforeMinutes, e: events })
-      .from(reminders)
-      .innerJoin(events, eq(reminders.eventId, events.id))
-      .where(eq(reminders.device, owner))
-      .orderBy(asc(events.startsAt)),
-  ]);
+  let resv: { at: Date; e: typeof events.$inferSelect }[] = [];
+  let rem: { beforeMinutes: number; e: typeof events.$inferSelect }[] = [];
+  try {
+    const [r1, r2] = await Promise.all([
+      db
+        .select({ at: reservations.createdAt, e: events })
+        .from(reservations)
+        .innerJoin(events, eq(reservations.eventId, events.id))
+        .where(eq(reservations.device, owner))
+        .orderBy(asc(events.startsAt)),
+      db
+        .select({ beforeMinutes: reminders.beforeMinutes, e: events })
+        .from(reminders)
+        .innerJoin(events, eq(reminders.eventId, events.id))
+        .where(eq(reminders.device, owner))
+        .orderBy(asc(events.startsAt)),
+    ]);
+    resv = r1;
+    rem = r2;
+  } catch {
+    // DB unavailable — return empty.
+  }
 
   return NextResponse.json({
     reservations: resv.map((r) => ({

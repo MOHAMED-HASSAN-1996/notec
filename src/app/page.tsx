@@ -17,22 +17,35 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const { t } = await getT();
 
-  const rows = await db
-    .select()
-    .from(events)
-    .where(gte(events.startsAt, new Date()))
-    .orderBy(asc(events.startsAt))
-    .limit(6);
-  const evts = rows.map(toPublic);
+  let evts: ReturnType<typeof toPublic>[] = [];
+  let stats = {
+    events: 0 as number,
+    attendees: 0 as number,
+    cities: 0 as number,
+    merges: 0 as number,
+  };
 
-  const [stats] = await db
-    .select({
-      events: sql<number>`count(*)::int`,
-      attendees: sql<number>`coalesce(sum(${events.attendeesCount}),0)::int`,
-      cities: sql<number>`count(distinct nullif(${events.city},''))::int`,
-      merges: sql<number>`coalesce(sum(${events.merges}),0)::int`,
-    })
-    .from(events);
+  try {
+    const rows = await db
+      .select()
+      .from(events)
+      .where(gte(events.startsAt, new Date()))
+      .orderBy(asc(events.startsAt))
+      .limit(6);
+    evts = rows.map(toPublic);
+
+    const [rowsStats] = await db
+      .select({
+        events: sql<number>`count(*)::int`,
+        attendees: sql<number>`coalesce(sum(${events.attendeesCount}),0)::int`,
+        cities: sql<number>`count(distinct nullif(${events.city},''))::int`,
+        merges: sql<number>`coalesce(sum(${events.merges}),0)::int`,
+      })
+      .from(events);
+    stats = rowsStats;
+  } catch {
+    // DB unavailable (e.g. missing DATABASE_URL) — render the page anyway.
+  }
 
   const steps: StepData[] = t.home.steps.map((s, i) => ({
     n: `0${i + 1}`,

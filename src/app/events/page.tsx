@@ -23,12 +23,17 @@ export default async function EventsPage({
 }) {
   const sp = await searchParams;
   const { t } = await getT();
-  const rows = await db
-    .select()
-    .from(events)
-    .where(gte(events.startsAt, new Date()))
-    .orderBy(asc(events.startsAt))
-    .limit(80);
+  let rows: (typeof events.$inferSelect)[] = [];
+  try {
+    rows = await db
+      .select()
+      .from(events)
+      .where(gte(events.startsAt, new Date()))
+      .orderBy(asc(events.startsAt))
+      .limit(80);
+  } catch {
+    // DB unavailable — show empty explorer instead of crashing.
+  }
 
   return (
     <EventsExplorer

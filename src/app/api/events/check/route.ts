@@ -17,34 +17,38 @@ export async function GET(req: Request) {
   let match = null;
   let reason: CheckResult["reason"] = null;
 
-  if (urlKey) {
-    const hit = await db
-      .select()
-      .from(events)
-      .where(eq(events.urlKey, urlKey))
-      .limit(1);
-    if (hit[0]) {
-      match = toPublic(hit[0]);
-      reason = "url";
-    }
-  }
-
-  if (!match && title.length >= 4) {
-    const all = await db.select({ id: events.id, title: events.title }).from(events);
-    let best: { id: string; score: number } | null = null;
-    for (const row of all) {
-      const s = titleSimilarity(title, row.title);
-      if (s >= SIMILAR_THRESHOLD && (!best || s > best.score)) {
-        best = { id: row.id, score: s };
-      }
-    }
-    if (best) {
-      const hit = await db.select().from(events).where(eq(events.id, best.id)).limit(1);
+  try {
+    if (urlKey) {
+      const hit = await db
+        .select()
+        .from(events)
+        .where(eq(events.urlKey, urlKey))
+        .limit(1);
       if (hit[0]) {
         match = toPublic(hit[0]);
-        reason = "title";
+        reason = "url";
       }
     }
+
+    if (!match && title.length >= 4) {
+      const all = await db.select({ id: events.id, title: events.title }).from(events);
+      let best: { id: string; score: number } | null = null;
+      for (const row of all) {
+        const s = titleSimilarity(title, row.title);
+        if (s >= SIMILAR_THRESHOLD && (!best || s > best.score)) {
+          best = { id: row.id, score: s };
+        }
+      }
+      if (best) {
+        const hit = await db.select().from(events).where(eq(events.id, best.id)).limit(1);
+        if (hit[0]) {
+          match = toPublic(hit[0]);
+          reason = "title";
+        }
+      }
+    }
+  } catch {
+    // DB unavailable — no match.
   }
 
   return NextResponse.json({ match, reason } satisfies CheckResult);

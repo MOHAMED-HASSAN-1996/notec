@@ -16,35 +16,54 @@ export async function GET(req: Request, ctx: Ctx) {
     ? `u:${user.id}`
     : req.headers.get("x-device-id") || "";
 
-  const rows = await db.select().from(events).where(eq(events.id, id)).limit(1);
-  if (!rows[0]) {
+  let row: typeof events.$inferSelect | null = null;
+  let r: { id: string }[] = [];
+  let m: { beforeMinutes: number }[] = [];
+  let relatedRows: (typeof events.$inferSelect)[] = [];
+
+  try {
+    const rows = await db.select().from(events).where(eq(events.id, id)).limit(1);
+    row = rows[0] ?? null;
+  } catch {
     return NextResponse.json({ error: "الحدث مش موجود" }, { status: 404 });
   }
-  const row = rows[0];
+  if (!row) {
+    return NextResponse.json({ error: "الحدث مش موجود" }, { status: 404 });
+  }
 
-  const [r, m] = await Promise.all([
-    owner
-      ? db
-          .select({ id: reservations.id })
-          .from(reservations)
-          .where(and(eq(reservations.eventId, id), eq(reservations.device, owner)))
-          .limit(1)
-      : Promise.resolve([] as { id: string }[]),
-    owner
-      ? db
-          .select({ beforeMinutes: reminders.beforeMinutes })
-          .from(reminders)
-          .where(and(eq(reminders.eventId, id), eq(reminders.device, owner)))
-          .limit(1)
-      : Promise.resolve([] as { beforeMinutes: number }[]),
-  ]);
+  try {
+    const [r1, m1] = await Promise.all([
+      owner
+        ? db
+            .select({ id: reservations.id })
+            .from(reservations)
+            .where(and(eq(reservations.eventId, id), eq(reservations.device, owner)))
+            .limit(1)
+        : Promise.resolve([] as { id: string }[]),
+      owner
+        ? db
+            .select({ beforeMinutes: reminders.beforeMinutes })
+            .from(reminders)
+            .where(and(eq(reminders.eventId, id), eq(reminders.device, owner)))
+            .limit(1)
+        : Promise.resolve([] as { beforeMinutes: number }[]),
+    ]);
+    r = r1;
+    m = m1;
+  } catch {
+    // DB unavailable — treat as not reserved/reminded.
+  }
 
-  const related = await db
-    .select()
-    .from(events)
-    .where(and(eq(events.category, row.category), gte(events.startsAt, new Date())))
-    .orderBy(asc(events.startsAt))
-    .limit(3);
+  try {
+    relatedRows = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.category, row.category), gte(events.startsAt, new Date())))
+      .orderBy(asc(events.startsAt))
+      .limit(3);
+  } catch {
+    // DB unavailable — no related events.
+  }
 
   return NextResponse.json({
     event: toPublic(row),
@@ -54,7 +73,7 @@ export async function GET(req: Request, ctx: Ctx) {
       beforeMinutes: m[0]?.beforeMinutes ?? 1440,
       attendeesCount: row.attendeesCount,
     },
-    related: related.filter((e) => e.id !== row.id).map(toPublic),
+    related: relatedRows.filter((e) => e.id !== row.id).map(toPublic),
   });
 }
 

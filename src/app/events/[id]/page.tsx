@@ -54,20 +54,30 @@ export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
 export default async function EventPage({ params }: Ctx) {
   const { id } = await params;
   const { t, lang } = await getT();
-  const rows = await db.select().from(events).where(eq(events.id, id)).limit(1);
+  let rows: (typeof events.$inferSelect)[] = [];
+  try {
+    rows = await db.select().from(events).where(eq(events.id, id)).limit(1);
+  } catch {
+    // DB unavailable below.
+  }
   if (!rows[0]) notFound();
   const ev = toPublic(rows[0]);
 
-  const related = await db
-    .select()
-    .from(events)
-    .where(and(eq(events.category, ev.category), gte(events.startsAt, new Date())))
-    .orderBy(asc(events.startsAt))
-    .limit(10);
-  const rel = related
-    .filter((r) => r.id !== ev.id)
-    .slice(0, 10)
-    .map(toPublic);
+  let rel: ReturnType<typeof toPublic>[] = [];
+  try {
+    const related = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.category, ev.category), gte(events.startsAt, new Date())))
+      .orderBy(asc(events.startsAt))
+      .limit(10);
+    rel = related
+      .filter((r) => r.id !== ev.id)
+      .slice(0, 10)
+      .map(toPublic);
+  } catch {
+    // Related events unavailable — hide slider.
+  }
 
   const price = ev.price === "مجاني" && lang === "en" ? "Free" : priceLabel(ev.price);
   const isPast = new Date(ev.startsAt) < new Date();

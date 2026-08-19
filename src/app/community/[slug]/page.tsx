@@ -56,12 +56,17 @@ export default async function CommunityPage({
   if (!community) return <StoredCommunityPage slug={slug} />;
   const { t } = await getT();
 
-  const rows = await db
-    .select()
-    .from(events)
-    .where(and(eq(events.community, community), gte(events.startsAt, new Date())))
-    .orderBy(asc(events.startsAt))
-    .limit(40);
+  let rows: (typeof events.$inferSelect)[] = [];
+  try {
+    rows = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.community, community), gte(events.startsAt, new Date())))
+      .orderBy(asc(events.startsAt))
+      .limit(40);
+  } catch {
+    // DB unavailable — render community page with empty list.
+  }
   const evts = rows.map(toPublic);
 
   return (

@@ -40,12 +40,17 @@ export async function GET(req: Request) {
       ? desc(events.attendeesCount)
       : asc(events.startsAt);
 
-  const rows = await db
-    .select()
-    .from(events)
-    .where(and(...conds))
-    .orderBy(order)
-    .limit(80);
+  let rows: (typeof events.$inferSelect)[] = [];
+  try {
+    rows = await db
+      .select()
+      .from(events)
+      .where(and(...conds))
+      .orderBy(order)
+      .limit(80);
+  } catch {
+    // DB unavailable — return empty list.
+  }
 
   return NextResponse.json({ events: rows.map(toPublic) });
 }
