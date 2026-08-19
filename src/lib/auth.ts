@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
-import { and, eq, gt } from "drizzle-orm";
-import { db, pool } from "@/db";
+import { and, eq, gt, sql } from "drizzle-orm";
+import { db } from "@/db";
 import { sessions, users } from "@/db/schema";
 
 export const SESSION_COOKIE = "notec_session";
@@ -109,22 +109,14 @@ export function ownerKey(user: SessionUser | null, device: string): string {
 export async function attachDeviceState(userId: string, device: string) {
   if (!device) return;
   const uOwner = `u:${userId}`;
-  await pool.query(
-    `DELETE FROM reservations a USING reservations b
-      WHERE a.device = $1 AND b.device = $2 AND a.event_id = b.event_id`,
-    [device, uOwner],
-  );
-  await pool.query(`UPDATE reservations SET device = $2 WHERE device = $1`, [
-    device,
-    uOwner,
-  ]);
-  await pool.query(
-    `DELETE FROM reminders a USING reminders b
-      WHERE a.device = $1 AND b.device = $2 AND a.event_id = b.event_id`,
-    [device, uOwner],
-  );
-  await pool.query(`UPDATE reminders SET device = $2 WHERE device = $1`, [
-    device,
-    uOwner,
-  ]);
+  await db.execute(sql`
+    DELETE FROM reservations a USING reservations b
+      WHERE a.device = ${device} AND b.device = ${uOwner} AND a.event_id = b.event_id
+  `);
+  await db.execute(sql`UPDATE reservations SET device = ${uOwner} WHERE device = ${device}`);
+  await db.execute(sql`
+    DELETE FROM reminders a USING reminders b
+      WHERE a.device = ${device} AND b.device = ${uOwner} AND a.event_id = b.event_id
+  `);
+  await db.execute(sql`UPDATE reminders SET device = ${uOwner} WHERE device = ${device}`);
 }
