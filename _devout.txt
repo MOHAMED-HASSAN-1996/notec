@@ -2,12 +2,13 @@
 - Local:         http://localhost:3000
 - Network:       http://192.168.1.5:3000
 - Environments: .env
-✓ Ready in 1935ms
+✓ Ready in 3.7s
 
- GET / 200 in 9.4s (next.js: 4.9s, application-code: 4.6s)
- GET /fonts/qatar-heavy.otf 404 in 5.7s (next.js: 2.4s, application-code: 3.3s)
- GET /fonts/qatar-medium.otf 404 in 5.7s (next.js: 2.8s, application-code: 2.8s)
- GET /fonts/qatar-bold.otf 404 in 5.7s (next.js: 2.9s, application-code: 2.8s)
- GET /sw.js 404 in 44ms (next.js: 5ms, application-code: 40ms)
- GET /api/auth/me 200 in 5.9s (next.js: 5.9s, application-code: 15ms)
- GET /sw.js 404 in 40ms (next.js: 5ms, application-code: 35ms)
+○ Compiling / ...
+ GET / 200 in 18.3s (next.js: 15.8s, application-code: 2.5s)
+ GET / 200 in 18.3s (next.js: 15.6s, application-code: 2.7s)
+ GET /fonts/qatar-heavy.otf 404 in 283ms (next.js: 97ms, application-code: 186ms)
+ GET /fonts/qatar-medium.otf 404 in 281ms (next.js: 128ms, application-code: 153ms)
+ GET /fonts/qatar-bold.otf 404 in 89ms (next.js: 8ms, application-code: 81ms)
+ GET /api/auth/me 200 in 1629ms (next.js: 1613ms, application-code: 17ms)
+ GET /sw.js 404 in 36ms (next.js: 4ms, application-code: 32ms)
